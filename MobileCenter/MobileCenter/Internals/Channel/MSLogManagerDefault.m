@@ -1,20 +1,24 @@
-#import "MobileCenter+Internal.h"
 #import "MSChannelDefault.h"
-#import "MSChannelDelegate.h"
+#import "MSFileStorage.h"
 #import "MSHttpSender.h"
 #import "MSIngestionSender.h"
-#import "MSLogDBStorage.h"
 #import "MSLogManagerDefault.h"
 #import "MSLogManagerDefaultPrivate.h"
 #import "MSMobileCenterErrors.h"
 #import "MSMobileCenterInternal.h"
+#import "MobileCenter+Internal.h"
 
-static char *const kMSlogsDispatchQueue = "com.microsoft.azure.mobile.mobilecenter.LogManagerQueue";
+static char *const MSlogsDispatchQueue = "com.microsoft.azure.mobile.mobilecenter.LogManagerQueue";
 
 /**
  * Private declaration of the log manager.
  */
-@interface MSLogManagerDefault (MSChannelDelegate)
+@interface MSLogManagerDefault ()
+
+/**
+ * A boolean value set to YES if this instance is enabled or NO otherwise.
+ */
+@property BOOL enabled;
 
 @end
 
@@ -26,13 +30,13 @@ static char *const kMSlogsDispatchQueue = "com.microsoft.azure.mobile.mobilecent
   self = [self initWithSender:[[MSIngestionSender alloc] initWithBaseUrl:logUrl
                                                                appSecret:appSecret
                                                                installId:[installId UUIDString]]
-                      storage:[[MSLogDBStorage alloc] initWithCapacity:kMSStorageMaxCapacity]];
+                      storage:[[MSFileStorage alloc] init]];
   return self;
 }
 
 - (instancetype)initWithSender:(MSHttpSender *)sender storage:(id<MSStorage>)storage {
   if ((self = [self init])) {
-    dispatch_queue_t serialQueue = dispatch_queue_create(kMSlogsDispatchQueue, DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t serialQueue = dispatch_queue_create(MSlogsDispatchQueue, DISPATCH_QUEUE_SERIAL);
     _enabled = YES;
     _logsDispatchQueue = serialQueue;
     _channels = [NSMutableDictionary<NSString *, id<MSChannel>> new];
@@ -50,7 +54,6 @@ static char *const kMSlogsDispatchQueue = "com.microsoft.azure.mobile.mobilecent
                                                storage:self.storage
                                          configuration:configuration
                                      logsDispatchQueue:self.logsDispatchQueue];
-    [channel addDelegate:(id<MSChannelDelegate>)self];
     self.channels[configuration.groupId] = channel;
   }
 }
@@ -69,6 +72,28 @@ static char *const kMSlogsDispatchQueue = "com.microsoft.azure.mobile.mobilecent
   }
 }
 
+#pragma mark - Channel Delegate
+
+- (void)addChannelDelegate:(id<MSChannelDelegate>)channelDelegate forGroupId:(NSString *)groupId {
+  if (channelDelegate) {
+    if (self.channels[groupId]) {
+      [self.channels[groupId] addDelegate:channelDelegate];
+    } else {
+      MSLogWarning([MSMobileCenter logTag], @"Channel has not been initialized for the group ID: %@", groupId);
+    }
+  }
+}
+
+- (void)removeChannelDelegate:(id<MSChannelDelegate>)channelDelegate forGroupId:(NSString *)groupId {
+  if (channelDelegate) {
+    if (self.channels[groupId]) {
+      [self.channels[groupId] removeDelegate:channelDelegate];
+    } else {
+      MSLogWarning([MSMobileCenter logTag], @"Channel has not been initialized for the group ID: %@", groupId);
+    }
+  }
+}
+
 - (void)enumerateDelegatesForSelector:(SEL)selector withBlock:(void (^)(id<MSLogManagerDelegate> delegate))block {
   @synchronized(self) {
     for (id<MSLogManagerDelegate> delegate in self.delegates) {
@@ -77,53 +102,6 @@ static char *const kMSlogsDispatchQueue = "com.microsoft.azure.mobile.mobilecent
       }
     }
   }
-}
-
-#pragma mark - Channel Delegate
-
-- (void)channel:(id<MSChannel>)channel willSendLog:(id<MSLog>)log {
-  [self enumerateDelegatesForSelector:@selector(willSendLog:)
-                            withBlock:^(id<MSLogManagerDelegate> delegate) {
-
-                              /*
-                               * If the delegate doesn't have groupId implementation, it assumes that the delegate is
-                               * interested in all kinds of logs. Otherwise, compare groupId.
-                               */
-                              if (![delegate respondsToSelector:@selector(groupId)] ||
-                                  [[delegate groupId] isEqualToString:[channel.configuration groupId]]) {
-                                [delegate willSendLog:log];
-                              }
-                            }];
-}
-
-- (void)channel:(id<MSChannel>)channel didSucceedSendingLog:(id<MSLog>)log {
-  [self enumerateDelegatesForSelector:@selector(didSucceedSendingLog:)
-                            withBlock:^(id<MSLogManagerDelegate> delegate) {
-
-                              /*
-                               * If the delegate doesn't have groupId implementation, it assumes that the delegate is
-                               * interested in all kinds of logs. Otherwise, compare groupId.
-                               */
-                              if (![delegate respondsToSelector:@selector(groupId)] ||
-                                  [[delegate groupId] isEqualToString:[channel.configuration groupId]]) {
-                                [delegate didSucceedSendingLog:log];
-                              }
-                            }];
-}
-
-- (void)channel:(id<MSChannel>)channel didFailSendingLog:(id<MSLog>)log withError:(NSError *)error {
-  [self enumerateDelegatesForSelector:@selector(didFailSendingLog:withError:)
-                            withBlock:^(id<MSLogManagerDelegate> delegate) {
-
-                              /*
-                               * If the delegate doesn't have groupId implementation, it assumes that the delegate is
-                               * interested in all kinds of logs. Otherwise, compare groupId.
-                               */
-                              if (![delegate respondsToSelector:@selector(groupId)] ||
-                                  [[delegate groupId] isEqualToString:[channel.configuration groupId]]) {
-                                [delegate didFailSendingLog:log withError:error];
-                              }
-                            }];
 }
 
 #pragma mark - Process items
@@ -136,7 +114,7 @@ static char *const kMSlogsDispatchQueue = "com.microsoft.azure.mobile.mobilecent
   // Get the channel.
   id<MSChannel> channel = self.channels[groupId];
   if (!channel) {
-    MSLogWarning([MSMobileCenter logTag], @"Channel has not been initialized for the group Id: %@", groupId);
+    MSLogWarning([MSMobileCenter logTag], @"Channel has not been initialized for the group ID: %@", groupId);
     return;
   }
 
@@ -212,7 +190,7 @@ static char *const kMSlogsDispatchQueue = "com.microsoft.azure.mobile.mobilecent
   if (self.channels[groupId]) {
     [self.channels[groupId] setEnabled:isEnabled andDeleteDataOnDisabled:deleteData];
   } else {
-    MSLogWarning([MSMobileCenter logTag], @"Channel has not been initialized for the group Id: %@", groupId);
+    MSLogWarning([MSMobileCenter logTag], @"Channel has not been initialized for the group ID: %@", groupId);
   }
 }
 

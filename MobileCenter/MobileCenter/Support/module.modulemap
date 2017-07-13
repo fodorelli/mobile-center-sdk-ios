@@ -8,5 +8,4 @@ framework module MobileCenter {
   link framework "CoreTelephony"
   link framework "SystemConfiguration"
   link framework "UIKit"
-  link "sqlite3"
 }

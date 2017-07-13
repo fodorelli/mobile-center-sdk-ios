@@ -23,7 +23,7 @@ static NSString *const kMSDefaultBaseUrl = @"https://in.mobile.azure.com";
 // Service name for initialization.
 static NSString *const kMSServiceName = @"MobileCenter";
 
-// The group Id for storage.
+// The group ID for storage.
 static NSString *const kMSGroupId = @"MobileCenter";
 
 @implementation MSMobileCenter

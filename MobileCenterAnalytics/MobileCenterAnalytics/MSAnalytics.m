@@ -9,7 +9,7 @@
 // Service name for initialization.
 static NSString *const kMSServiceName = @"Analytics";
 
-// The group Id for storage.
+// The group ID for storage.
 static NSString *const kMSGroupId = @"Analytics";
 
 // Singleton
@@ -87,9 +87,11 @@ static const int maxPropertyValueLength = 64;
     // Start session tracker.
     [self.sessionTracker start];
 
-    // Add delegates to log manager.
+    // Add delegate to log manager.
     [self.logManager addDelegate:self.sessionTracker];
-    [self.logManager addDelegate:self];
+
+    // Set self as delegate of analytics channel.
+    [self.logManager addChannelDelegate:self forGroupId:self.groupId];
 
     // Report current page while auto page tracking is on.
     if (self.autoPageTrackingEnabled) {
@@ -105,7 +107,7 @@ static const int maxPropertyValueLength = 64;
     MSLogInfo([MSAnalytics logTag], @"Analytics service has been enabled.");
   } else {
     [self.logManager removeDelegate:self.sessionTracker];
-    [self.logManager removeDelegate:self];
+    [self.logManager removeChannelDelegate:self forGroupId:self.groupId];
     [self.sessionTracker stop];
     [self.sessionTracker clearSessions];
     MSLogInfo([MSAnalytics logTag], @"Analytics service has been disabled.");
@@ -305,9 +307,10 @@ static const int maxPropertyValueLength = 64;
   [[self sharedInstance] setDelegate:delegate];
 }
 
-#pragma mark - MSLogManagerDelegate
+#pragma mark - MSChannelDelegate
 
-- (void)willSendLog:(id<MSLog>)log {
+- (void)channel:(id<MSChannel>)channel willSendLog:(id<MSLog>)log {
+  (void)channel;
   if (!self.delegate) {
     return;
   }
@@ -323,7 +326,8 @@ static const int maxPropertyValueLength = 64;
   }
 }
 
-- (void)didSucceedSendingLog:(id<MSLog>)log {
+- (void)channel:(id<MSChannel>)channel didSucceedSendingLog:(id<MSLog>)log {
+  (void)channel;
   if (!self.delegate) {
     return;
   }
@@ -339,7 +343,8 @@ static const int maxPropertyValueLength = 64;
   }
 }
 
-- (void)didFailSendingLog:(id<MSLog>)log withError:(NSError *)error {
+- (void)channel:(id<MSChannel>)channel didFailSendingLog:(id<MSLog>)log withError:(NSError *)error {
+  (void)channel;
   if (!self.delegate) {
     return;
   }

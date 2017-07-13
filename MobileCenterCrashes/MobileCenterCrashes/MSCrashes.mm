@@ -17,12 +17,12 @@
 static NSString *const kMSServiceName = @"Crashes";
 
 /**
- * The group Id for storage.
+ * The group ID for storage.
  */
 static NSString *const kMSGroupId = @"Crashes";
 
 /**
- * The group Id for log buffer.
+ * The group ID for log buffer.
  */
 static NSString *const kMSBufferGroupId = @"CrashesBuffer";
 
@@ -224,8 +224,8 @@ __attribute__((noreturn)) static void uncaught_cxx_exception_handler(const MSCra
 }
 
 /* This can never be binded to Xamarin */
-+ (void)disableMachExceptionHandler {
-  [[self sharedInstance] setEnableMachExceptionHandler:NO];
++ (void)enableMachExceptionHandler {
+  [[self sharedInstance] setEnableMachExceptionHandler:YES];
 }
 
 + (void)setDelegate:(_Nullable id<MSCrashesDelegate>)delegate {
@@ -242,7 +242,6 @@ __attribute__((noreturn)) static void uncaught_cxx_exception_handler(const MSCra
     _logBufferDir = [MSCrashesUtil logBufferDir];
     _analyzerInProgressFile = [_crashesDir URLByAppendingPathComponent:kMSAnalyzerFilename];
     _didCrashInLastSession = NO;
-    _enableMachExceptionHandler = YES;
     _channelConfiguration = [[MSChannelConfiguration alloc] initWithGroupId:[self groupId]
                                                                    priority:MSPriorityHigh
                                                               flushInterval:1.0
@@ -289,6 +288,9 @@ __attribute__((noreturn)) static void uncaught_cxx_exception_handler(const MSCra
     // Get persisted crash reports.
     self.crashFiles = [self persistedCrashReports];
 
+    // Set self as delegate of crashes' channel.
+    [self.logManager addChannelDelegate:self forGroupId:self.groupId];
+
     // Process PLCrashReports, this will format the PLCrashReport into our schema and then trigger sending.
     // This mostly happens on the start of the service.
     if (self.crashFiles.count > 0) {
@@ -312,6 +314,11 @@ __attribute__((noreturn)) static void uncaught_cxx_exception_handler(const MSCra
     [self emptyLogBufferFiles];
     [self removeAnalyzerFile];
     [self.plCrashReporter purgePendingCrashReport];
+
+    // Remove as ChannelDelegate from LogManager
+    [self.logManager removeChannelDelegate:self forGroupId:self.groupId];
+    [self.logManager removeChannelDelegate:self forGroupId:self.groupId];
+    [self.logManager removeChannelDelegate:self forGroupId:self.groupId];
     MSLogInfo([MSCrashes logTag], @"Crashes service has been disabled.");
   }
 }
@@ -467,7 +474,10 @@ __attribute__((noreturn)) static void uncaught_cxx_exception_handler(const MSCra
   }
 }
 
-- (void)willSendLog:(id<MSLog>)log {
+#pragma mark - MSChannelDelegate
+
+- (void)channel:(id<MSChannel>)channel willSendLog:(id<MSLog>)log {
+  (void)channel;
   id<MSCrashesDelegate> strongDelegate = self.delegate;
   if (strongDelegate && [strongDelegate respondsToSelector:@selector(crashes:willSendErrorReport:)]) {
     NSObject *logObject = static_cast<NSObject *>(log);
@@ -479,7 +489,8 @@ __attribute__((noreturn)) static void uncaught_cxx_exception_handler(const MSCra
   }
 }
 
-- (void)didSucceedSendingLog:(id<MSLog>)log {
+- (void)channel:(id<MSChannel>)channel didSucceedSendingLog:(id<MSLog>)log {
+  (void)channel;
   id<MSCrashesDelegate> strongDelegate = self.delegate;
   if (strongDelegate && [strongDelegate respondsToSelector:@selector(crashes:didSucceedSendingErrorReport:)]) {
     NSObject *logObject = static_cast<NSObject *>(log);
@@ -491,7 +502,8 @@ __attribute__((noreturn)) static void uncaught_cxx_exception_handler(const MSCra
   }
 }
 
-- (void)didFailSendingLog:(id<MSLog>)log withError:(NSError *)error {
+- (void)channel:(id<MSChannel>)channel didFailSendingLog:(id<MSLog>)log withError:(NSError *)error {
+  (void)channel;
   id<MSCrashesDelegate> strongDelegate = self.delegate;
   if (strongDelegate && [strongDelegate respondsToSelector:@selector(crashes:didFailSendingErrorReport:withError:)]) {
     NSObject *logObject = static_cast<NSObject *>(log);

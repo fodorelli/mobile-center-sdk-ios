@@ -283,7 +283,7 @@
                                                       annotation:expectedAnnotation];
 
   // Then
-  assertThatUnsignedLong(MSAppDelegateForwarder.delegates.count, equalToUnsignedLong(0));
+  assertThatInt(MSAppDelegateForwarder.delegates.count, equalToInt(0));
   assertThatBool(returnedValue, is(@(expectedReturnedValue)));
   [self waitForExpectations:@[ originalCalledExpectation ] timeout:1];
 }
@@ -677,7 +677,10 @@
 
 - (void)testDidReceiveRemoteNotification {
 
-  // If
+  /*
+   * If
+   */
+
   // Track fetch result.
   __block UIBackgroundFetchResult forwardedFetchResult = UIBackgroundFetchResultFailed;
   UIBackgroundFetchResult expectedFetchResult = UIBackgroundFetchResultNewData;
@@ -693,24 +696,16 @@
   // Setup an empty original delegate.
   Class originalAppDelegateClass = [self createClassConformingToProtocol:@protocol(UIApplicationDelegate)];
   id<UIApplicationDelegate> originalAppDelegate = [originalAppDelegateClass new];
-  SEL didReceiveRemoteNotification1Sel = @selector(application:didReceiveRemoteNotification:);
-  SEL didReceiveRemoteNotification2Sel = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
-  [MSAppDelegateForwarder addAppDelegateSelectorToSwizzle:didReceiveRemoteNotification1Sel];
-  [MSAppDelegateForwarder addAppDelegateSelectorToSwizzle:didReceiveRemoteNotification2Sel];
-
+  SEL didReceiveRemoteNotificationSel = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
+  [MSAppDelegateForwarder addAppDelegateSelectorToSwizzle:didReceiveRemoteNotificationSel];
 
   // Setup a custom delegate.
-  self.customAppDelegateMock.delegateValidators[NSStringFromSelector(didReceiveRemoteNotification1Sel)] =
-      ^(UIApplication *application, NSDictionary *userInfo) {
-
-        // Then
-        assertThat(application, is(appMock));
-        assertThat(userInfo, is(expectedUserInfo));
-      };
-  self.customAppDelegateMock.delegateValidators[NSStringFromSelector(didReceiveRemoteNotification2Sel)] =
+  self.customAppDelegateMock.delegateValidators[NSStringFromSelector(didReceiveRemoteNotificationSel)] =
       ^(UIApplication *application, NSDictionary *userInfo, void (^fetchHandler)(UIBackgroundFetchResult)) {
-        
-        // Then
+
+        /*
+         * Then
+         */
         assertThat(application, is(appMock));
         assertThat(userInfo, is(expectedUserInfo));
         assertThat(fetchHandler, is(fetchHandler));
@@ -724,14 +719,16 @@
   [MSAppDelegateForwarder swizzleOriginalDelegate:originalAppDelegate];
   [MSAppDelegateForwarder addDelegate:self.customAppDelegateMock];
 
-  // When
-  [originalAppDelegate application:appMock
-      didReceiveRemoteNotification:expectedUserInfo];
+  /*
+   * When
+   */
   [originalAppDelegate application:appMock
       didReceiveRemoteNotification:expectedUserInfo
             fetchCompletionHandler:expectedFetchHandler];
-  
-  // Then
+
+  /*
+   * Then
+   */
   [self waitForExpectations:@[ customCalledExpectation ] timeout:1];
 
   // In the end the completion handler must be called with the forwarded value.

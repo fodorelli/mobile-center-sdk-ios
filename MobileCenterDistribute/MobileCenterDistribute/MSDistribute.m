@@ -21,7 +21,7 @@
 static NSString *const kMSServiceName = @"Distribute";
 
 /**
- * The group Id for storage.
+ * The group ID for storage.
  */
 static NSString *const kMSGroupId = @"Distribute";
 
