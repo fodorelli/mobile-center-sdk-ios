@@ -198,6 +198,14 @@
 			name = iOS;
 			sourceTree = "<group>";
 		};
+		B22628CC1F27FAC400C79D98 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				38D4BB9F1D5A98D1001A30A0 /* ../MobileCenter/MobileCenter/MSService.h */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		D33A94481E5B11BB003966DB = {
 			isa = PBXGroup;
 			children = (
@@ -207,6 +215,7 @@
 				D3AD5EC11E5C4F6A001627AB /* MobileCenterPushTests */,
 				D33A94521E5B11BB003966DB /* Products */,
 				D3E5F5C91E6D589E0072F1DC /* Vendor */,
+				B22628CC1F27FAC400C79D98 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -386,7 +395,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = MS;
-				LastUpgradeCheck = 0820;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = Microsoft;
 				TargetAttributes = {
 					D33A94501E5B11BB003966DB = {
@@ -507,6 +516,10 @@
 			baseConfigurationReference = D3AD5F051E5C7FFF001627AB /* MobileCenterPush.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -524,6 +537,10 @@
 			baseConfigurationReference = D3AD5F051E5C7FFF001627AB /* MobileCenterPush.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				MTL_ENABLE_DEBUG_INFO = NO;

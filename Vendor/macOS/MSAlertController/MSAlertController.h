@@ -1,7 +1,7 @@
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 
-typedef void (^actionCallback)();
+typedef void (^actionCallback)(void);
 
 NS_ASSUME_NONNULL_BEGIN
 

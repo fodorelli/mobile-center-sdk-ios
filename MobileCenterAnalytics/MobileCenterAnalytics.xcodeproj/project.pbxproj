@@ -480,6 +480,14 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
+		B22628CB1F27FAC200C79D98 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				38D4BB9F1D5A98D1001A30A0 /* ../MobileCenter/MobileCenter/MSService.h */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		E85547B71D2D6253002DF6E2 = {
 			isa = PBXGroup;
 			children = (
@@ -488,6 +496,7 @@
 				E85547C21D2D6253002DF6E2 /* MobileCenterAnalytics */,
 				E85547D61D2D6723002DF6E2 /* MobileCenterAnalyticsTests */,
 				E85547C11D2D6253002DF6E2 /* Products */,
+				B22628CB1F27FAC200C79D98 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -744,7 +753,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = MS;
-				LastUpgradeCheck = 0820;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = Microsoft;
 				TargetAttributes = {
 					046AEAB21ECA51AF00CBE511 = {
@@ -1097,6 +1106,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B2812EF21DA3148000307DCE /* MobileCenterAnalytics.xcconfig */;
 			buildSettings = {
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -1113,6 +1126,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B2812EF21DA3148000307DCE /* MobileCenterAnalytics.xcconfig */;
 			buildSettings = {
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				MTL_ENABLE_DEBUG_INFO = NO;
